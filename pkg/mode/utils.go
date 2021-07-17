@@ -177,7 +177,7 @@ func FilterDominated(elems models.Elements) (models.Elements, models.Elements) {
 func CalculateCrwdDist(elems models.Elements) {
 	if len(elems) <= 2 {
 		for i := range elems {
-			elems[i].Crwdst = float64(math.MaxInt32)
+			elems[i].Crwdst = math.MaxFloat64
 		}
 		return
 	}
@@ -185,6 +185,7 @@ func CalculateCrwdDist(elems models.Elements) {
 	for i := range elems {
 		elems[i].Crwdst = 0 // resets the crwdst
 	}
+
 	szObjs := len(elems[0].Objs)
 	for m := 0; m < szObjs; m++ {
 		// sort by current objective
@@ -194,13 +195,20 @@ func CalculateCrwdDist(elems models.Elements) {
 
 		objMin := elems[0].Objs[m]
 		objMax := elems[len(elems)-1].Objs[m]
-		elems[0].Crwdst = float64(math.MaxInt32)
-		elems[len(elems)-1].Crwdst = float64(math.MaxInt32)
+		elems[0].Crwdst = math.MaxFloat64
+		elems[len(elems)-1].Crwdst = math.MaxFloat64
 		for i := 1; i < len(elems)-1; i++ {
+
 			distance := elems[i+1].Objs[m] - elems[i-1].Objs[m]
 
-			if math.Abs(objMax-objMin) > 0 {
-				elems[i].Crwdst += distance / (objMax - objMin)
+			// if difference between extremes is less than 1e-8
+			if math.Abs(objMax-objMin) > 1e-8 {
+				distance = distance / (objMax - objMin)
+			}
+
+			// only adds to the crowdDistance if smalled than max value
+			if elems[i].Crwdst+distance < math.MaxFloat64 {
+				elems[i].Crwdst += distance
 			}
 		}
 	}

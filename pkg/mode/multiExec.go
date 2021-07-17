@@ -80,6 +80,7 @@ func MultiExecutions(
 		// gets non dominated and filters by crowdingDistance
 		_, rankedPareto = ReduceByCrowdDistance(rankedPareto, len(rankedPareto))
 
+		// TODO remove 1000 and see if plot is more sparse
 		if len(rankedPareto) > 1000 {
 			rankedPareto = rankedPareto[:1000]
 		}
