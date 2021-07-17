@@ -9,6 +9,11 @@ import (
 	"github.com/nicholaspcr/gde3/pkg/problems/models"
 )
 
+var (
+	// INF is the maximum value used in the crowding distance
+	INF = math.MaxFloat64 - 1e5
+)
+
 // GeneratePopulation - creates a population without objs calculates
 func GeneratePopulation(p models.Params) models.Elements {
 	ret := make(models.Elements, p.NP)
@@ -35,18 +40,21 @@ func ReduceByCrowdDistance(
 	elems models.Elements,
 	NP int,
 ) (models.Elements, models.Elements) {
-	ranks := FastNonDominatedRanking(elems)
 
+	ranks := FastNonDominatedRanking(elems)
+	elems = make(models.Elements, 0)
+
+	// TODO remove the qtdElems sections
 	qtdElems := 0
+
 	for _, r := range ranks {
 		qtdElems += len(r)
 	}
+
 	if qtdElems < NP {
 		log.Println("elems -> ", qtdElems)
 		log.Fatal("less models.elements than NP")
 	}
-
-	elems = make(models.Elements, 0)
 
 	for i := 0; i < len(ranks); i++ {
 		CalculateCrwdDist(ranks[i])
@@ -68,6 +76,7 @@ func ReduceByCrowdDistance(
 
 // FastNonDominatedRanking - ranks the models.elements and returns a map with models.elements per rank
 func FastNonDominatedRanking(elems models.Elements) map[int]models.Elements {
+
 	dominatingIth := make([]int, len(elems))
 	ithDominated := make([][]int, len(elems))
 	fronts := make([][]int, len(elems)+1)
@@ -187,27 +196,32 @@ func CalculateCrwdDist(elems models.Elements) {
 	}
 
 	szObjs := len(elems[0].Objs)
+
 	for m := 0; m < szObjs; m++ {
 		// sort by current objective
 		sort.SliceStable(elems, func(i, j int) bool {
 			return elems[i].Objs[m] < elems[j].Objs[m]
 		})
 
+		// obtain the extremes of the objective analysed
 		objMin := elems[0].Objs[m]
 		objMax := elems[len(elems)-1].Objs[m]
-		elems[0].Crwdst = math.MaxFloat64
-		elems[len(elems)-1].Crwdst = math.MaxFloat64
+
+		// first and last receive max Crwdst value
+		elems[0].Crwdst = INF
+		elems[len(elems)-1].Crwdst = INF
+
 		for i := 1; i < len(elems)-1; i++ {
 
 			distance := elems[i+1].Objs[m] - elems[i-1].Objs[m]
 
 			// if difference between extremes is less than 1e-8
-			if math.Abs(objMax-objMin) > 1e-8 {
+			if objMax-objMin > 1e-8 {
 				distance = distance / (objMax - objMin)
 			}
 
 			// only adds to the crowdDistance if smalled than max value
-			if elems[i].Crwdst+distance < math.MaxFloat64 {
+			if elems[i].Crwdst+distance < INF {
 				elems[i].Crwdst += distance
 			}
 		}
