@@ -64,7 +64,7 @@ func ReduceByCrowdDistance(
 
 		elems = append(elems, ranks[i]...)
 		if len(elems) >= NP {
-			elems = (elems)[:NP]
+			elems = elems[:NP]
 			break
 		}
 	}
@@ -137,6 +137,7 @@ func FastNonDominatedRanking(elems models.Elements) map[int]models.Elements {
 		fronts = append(fronts, nextFront)
 	}
 
+	// TODO remove section
 	// previous method with matrix of fronts already instantiated
 	//	for i := 1; i < len(fronts); i++ {
 	//
@@ -228,8 +229,9 @@ func CalculateCrwdDist(elems models.Elements) {
 		return
 	}
 
+	// resets the crwdst
 	for i := range elems {
-		elems[i].Crwdst = 0 // resets the crwdst
+		elems[i].Crwdst = 0
 	}
 
 	szObjs := len(elems[0].Objs)
@@ -253,7 +255,7 @@ func CalculateCrwdDist(elems models.Elements) {
 			distance := elems[i+1].Objs[m] - elems[i-1].Objs[m]
 
 			// if difference between extremes is less than 1e-8
-			if objMax-objMin > 1e-8 {
+			if objMax-objMin > 0 {
 				distance = distance / (objMax - objMin)
 			}
 
