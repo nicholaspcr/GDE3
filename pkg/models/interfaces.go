@@ -9,7 +9,7 @@ type (
 		// Evaluate is the function responsible for altering the objective
 		// slice of a vector, therefore is assumed that the Vector passed will
 		// be modified by this func
-		Evaluate(e *Vector, M int) error
+		Evaluate(*Vector, int) error
 	}
 
 	// Var
